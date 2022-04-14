@@ -1,9 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
     <h3 style="color:#000">Home page</h3>
-    <div class="card">
+    <hr/>
+    <div class="center" style="padding:10px; margin:50px;" >
         {%for post in posts %}
-            <a href="{{ post.get_absolute_url }}" class="card-body">{{post.body}}</a>
+            <div class="card" style="color: black ">
+                <a style="text-align:center; padding:5px ; margin:0px" href="{{ post.get_absolute_url }}" class="card-body" >{{post.body}}</a>
+            </div>
         {% endfor%}
     </div>
 {% endblock %}
