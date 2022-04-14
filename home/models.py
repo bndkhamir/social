@@ -7,6 +7,9 @@ class Post(models.Model):
     slug = models.SlugField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created','-updated']
     def __str__(self):
         return f'Username:{self.user} , Slug:{self.slug} , Updated:{self.updated}'
     def get_absolute_url(self):
