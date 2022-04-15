@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from home.models import Post
 from django.contrib.auth import views as auth_view
 from django.urls import reverse_lazy
+from .models import Relation
 
 class UserRegisterView(View):
     form_class = AccountsForm
@@ -64,9 +65,13 @@ class UserLogoutView(LoginRequiredMixin,View):
 
 class UserProfileView(LoginRequiredMixin,View):
     def get(self,request,user_id):
+        is_following=False
         user = User.objects.get(pk=user_id)
-        posts = Post.objects.filter(user = user)
-        return render(request,'accounts/profile.html', {'user':user,'posts':posts})
+        posts = user.posts.all()
+        relation = Relation.objects.filter(from_user=request.user, to_user=user)
+        if relation.exists():
+            is_following = True
+        return render(request,'accounts/profile.html', {'user':user,'posts':posts,'is_folowing':is_following})
 
 class UserPasswordResetView(auth_view.PasswordResetView):
     template_name = 'accounts/password_reset_form.html'
@@ -75,3 +80,28 @@ class UserPasswordResetView(auth_view.PasswordResetView):
 
 class UserPasswordResetDoneView(auth_view.PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
+
+
+
+class UserFollowView(LoginRequiredMixin,View):
+    def get(self,request,user_id):
+        user = User.objects.get(id=user_id)
+        relation = Relation.objects.filter(from_user=request.user,to_user=user)
+        if relation.exists():
+            messages.error(request,'you are already following this user','danger')
+        else:
+            Relation(from_user=request.user ,to_user=user).save()
+            messages.success(request,'you followed this user','success')
+        return redirect('accounts:user_profile',user_id)
+
+
+class UserUnFollowView(LoginRequiredMixin,View):
+    def get(self,request,user_id):
+        user = User.objects.get(id=user_id)
+        relation = Relation.objects.filter(from_user=request.user, to_user=user)
+        if relation.exists():
+            relation.delete()
+            messages.success(request,'you unfollowed this user','success')
+        else:
+            messages.error(request,'you are not following this user','danger')
+        return redirect('accounts:user_profile', user_id)
